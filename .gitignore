@@ -1,0 +1,18 @@
+# Белый список: в репозиторий попадают инструменты сборки, синопсис и библии.
+# Текст романа (chapters/), хронология, промпты, архивы, переписка, сгенерированный сайт,
+# аудио, иллюстрации, шрифты и кэши — не публикуются.
+*
+!.gitignore
+!README.md
+!.github/
+!.github/FUNDING.yml
+!synopsis.md
+!characters.md
+!worlds.md
+!build_site.py
+!build_audio.py
+!audiobook.py
+!gogol_ssml.js
+!serve_site.bat
+!audio.bat
+!stress.json
