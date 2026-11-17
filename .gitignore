@@ -10,6 +10,9 @@
 !synopsis.md
 !characters.md
 !worlds.md
+!synopsis_en.md
+!characters_en.md
+!worlds_en.md
 !build_site.py
 !build_audio.py
 !audiobook.py

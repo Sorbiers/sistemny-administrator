@@ -13,6 +13,10 @@
 | [`synopsis.md`](synopsis.md) | синопсис: сюжет целиком, структура частей и глав, решения автора (**спойлеры**) |
 | [`characters.md`](characters.md) | библия персонажей обоих миров |
 | [`worlds.md`](worlds.md) | библия мира: Москва 2000-х и мир сна, правила, словарь, хронология событий |
+| [`synopsis_en.md`](synopsis_en.md), [`characters_en.md`](characters_en.md), [`worlds_en.md`](worlds_en.md) | то же на английском (English: synopsis, character and world bibles) |
+
+Сайт собирается на двух языках: русский — в `site/`, английский — в `site/en/` (главы перевода лежат
+в `chapters_en/` и в репозиторий не входят). Аудиоверсия — только русская.
 
 ## Инструменты
 

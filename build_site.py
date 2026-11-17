@@ -20,6 +20,80 @@ ILLU_EXT = (".jpg", ".jpeg", ".png", ".webp", ".avif")
 
 TITLE = "Системный Администратор"
 AUTHOR = "Андрей Сорбье"
+
+# ---------------------------------------------------------------- языки
+# Русский сайт — в site/, английский — в site/en/ (общие картинки, шрифты, портреты).
+LANG = "ru"          # текущий язык сборки; меняется в main()
+PREFIX = ""          # путь от страницы к корню site/ ("" или "../")
+CHAPTERS_EN = ROOT / "chapters_en"
+STR = {
+    "ru": {
+        "lang": "ru", "title": "Системный Администратор", "author": "Андрей Сорбье",
+        "h1a": "Системный", "h1b": "Администратор",
+        "desc": "Роман в двух мирах: офисная Москва 2001–2004 годов и мир, где герою открыто всё.",
+        "sub": "Роман в двух мирах",
+        "w_day_b": "Наше время", "w_day": "Москва, 2001–2004. Фирма деревянных окон, бухгалтерия, чужая почта.",
+        "w_dream_b": "Вход", "w_dream": "Каждую ночь — туда, где ему открыто всё.",
+        "start": "Начать читать", "contents": "Содержание", "listen": "Слушать", "about": "О проекте",
+        "smaller": "Уменьшить шрифт", "bigger": "Увеличить шрифт", "theme": "Сменить тему",
+        "chapters": "Главы", "close": "Закрыть", "resume": "Вы остановились на", "resume_ch": "главе ",
+        "meta": "%%COUNT%% глав · около %%HOURS%% часов чтения",
+        "end": "Конец", "to_toc": "К содержанию", "about_rights": "О проекте и правах",
+        "fiction": "Все персонажи, организации и события вымышлены. Любое сходство с реальными "
+                   "людьми и организациями случайно.",
+        "chapter": "Глава", "min": "мин", "min_read": "мин чтения", "end_link": "Конец →",
+        "log_label": "Утренняя запись в тетради", "ch_nav": "Навигация по главам",
+        "store": "sysadmin-reader", "other": "en/", "other_label": "English", "other_lang": "en",
+        "back": "← К книге", "illu": "Иллюстрация к главе",
+        "donate": 'Сайт бесплатный и без рекламы. Если он вам нравится, автора можно отблагодарить: '
+                  '<a href="https://ko-fi.com/sorbiers" target="_blank" rel="noopener">поддержать проект</a>.',
+        "spoiler_syn": "Синопсис раскрывает", "spoiler_doc": "Рабочий материал автора: раскрывает",
+        "spoiler_tail": "весь сюжет, включая финал. Если вы ещё не читали роман — сначала "
+                        '<a href="index.html">книга</a>.',
+    },
+    "en": {
+        "lang": "en", "title": "System Administrator", "author": "Andrey Sorbier",
+        "h1a": "System", "h1b": "Administrator",
+        "desc": "A novel in two worlds: office Moscow in 2001–2004, and a world where everything is open to him.",
+        "sub": "A novel in two worlds",
+        "w_day_b": "Our time", "w_day": "Moscow, 2001–2004. A wooden-window firm, the accounts office, other people's mail.",
+        "w_dream_b": "Log in", "w_dream": "Every night — to where everything is open to him.",
+        "start": "Start reading", "contents": "Contents", "listen": "Listen", "about": "About",
+        "smaller": "Smaller text", "bigger": "Larger text", "theme": "Switch theme",
+        "chapters": "Chapters", "close": "Close", "resume": "You stopped at", "resume_ch": "chapter ",
+        "meta": "%%COUNT%% chapters · about %%HOURS%% hours of reading",
+        "end": "The End", "to_toc": "Back to contents", "about_rights": "About the project and rights",
+        "fiction": "All characters, organisations and events are fictional. Any resemblance to real "
+                   "people or organisations is coincidental.",
+        "chapter": "Chapter", "min": "min", "min_read": "min read", "end_link": "The End →",
+        "log_label": "Morning note in the notebook", "ch_nav": "Chapter navigation",
+        "store": "sysadmin-reader-en", "other": "../", "other_label": "Русский", "other_lang": "ru",
+        "back": "← Back to the book", "illu": "Illustration for chapter",
+        "donate": 'This site is free and has no ads. If you enjoy it, you can thank the author: '
+                  '<a href="https://ko-fi.com/sorbiers" target="_blank" rel="noopener">support the project</a>.',
+        "spoiler_syn": "The synopsis reveals", "spoiler_doc": "The author's working notes reveal",
+        "spoiler_tail": "the whole plot, including the ending. If you haven't read the novel yet, "
+                        'start with <a href="index.html">the book</a>.',
+    },
+}
+
+
+def T(key):
+    return STR[LANG][key]
+
+
+def loc(page):
+    """Подставляет строки текущего языка (%%T:ключ%%), префикс пути (%%P%%) и ссылку на другой язык."""
+    page = re.sub(r"%%T:(\w+)%%", lambda m: STR[LANG][m.group(1)], page)
+    return page.replace("%%P%%", PREFIX)
+
+
+def lang_link(page_name):
+    """Ссылка на ту же страницу на другом языке (пока перевода нет — ничего)."""
+    if LANG == "ru" and not (CHAPTERS_EN.exists() and any(CHAPTERS_EN.glob("[0-9][0-9].md"))):
+        return ""
+    return (f'<a class="lang" href="{T("other")}{page_name}" hreflang="{T("other_lang")}" '
+            f'lang="{T("other_lang")}">{T("other_label")}</a>')
 REPO_URL = "https://github.com/Sorbiers/sistemny-administrator"
 # обсуждение «Ищем литературного редактора»
 EDITOR_DISCUSSION_URL = REPO_URL + "/discussions/1"
@@ -97,8 +171,8 @@ def parse_chapter(path: Path):
             log = [strip_marks(l) for l in block]
             continue
         text = " ".join(block) if len(block) == 1 else None
-        if text is not None and text.strip() == "Вход.":
-            target.append('<p class="vhod">Вход.</p>')
+        if text is not None and text.strip() in ("Вход.", "Log in."):
+            target.append(f'<p class="vhod">{html.escape(text.strip())}</p>')
             continue
         if teaser is None and target is day:
             teaser = teaser_of(block[0])
@@ -194,12 +268,12 @@ def figure(num, side, images, captions):
     name = images.get((num, side))
     if not name:
         return ""
-    title, desc = captions.get((num, side), ("", ""))
-    alt = html.escape(f"{title}. {desc}".strip(". ") if title else f"Иллюстрация к главе {num}")
+    title, desc = captions.get((num, side), ("", "")) if LANG == "ru" else ("", "")
+    alt = html.escape(f"{title}. {desc}".strip(". ") if title else f'{T("illu")} {num}')
     cap = ""  # подписи под картинками отключены; название остаётся в alt
     return (
         f'<figure class="illu illu-{side}">'
-        f'<img src="img/{name}" alt="{alt}" loading="lazy" decoding="async">{cap}</figure>'
+        f'<img src="{PREFIX}img/{name}" alt="{alt}" loading="lazy" decoding="async">{cap}</figure>'
     )
 
 
@@ -235,7 +309,8 @@ def fonts_html():
     css = FONTS_SRC / "fonts.css"
     if not css.exists():
         return GOOGLE_FONTS
-    return "<style>\n" + css.read_text(encoding="utf-8") + "</style>"
+    text = css.read_text(encoding="utf-8").replace("url(fonts/", f"url({PREFIX}fonts/")
+    return "<style>\n" + text + "</style>"
 
 
 def publish_fonts():
@@ -298,7 +373,7 @@ def render(chapters, images=None, captions=None):
                 f'<li><a href="#ch-{ch["num"]}" class="toc-ch">'
                 f'<span class="toc-n">{ch["num"]}</span>'
                 f'<span class="toc-t">{inline(ch["teaser"])}{date}</span>'
-                f'<span class="toc-m">{ch["minutes"]} мин</span></a></li>'
+                f'<span class="toc-m">{ch["minutes"]} {T("min")}</span></a></li>'
             )
             drawer_html.append(
                 f'<li><a href="#ch-{ch["num"]}" data-ch="{ch["num"]}">'
@@ -323,34 +398,39 @@ def render(chapters, images=None, captions=None):
         log = ""
         if ch["log"]:
             lines = "".join(f"<div>{html.escape(l)}</div>" for l in ch["log"])
-            log = f'<div class="log" aria-label="Утренняя запись в тетради">{lines}</div>'
+            log = f'<div class="log" aria-label="{T("log_label")}">{lines}</div>'
         prev_link = (
-            f'<a href="#ch-{nums[i-1]}">← Глава {nums[i-1]}</a>' if i > 0 else "<span></span>"
+            f'<a href="#ch-{nums[i-1]}">← {T("chapter")} {nums[i-1]}</a>' if i > 0 else "<span></span>"
         )
         next_link = (
-            f'<a href="#ch-{nums[i+1]}">Глава {nums[i+1]} →</a>'
+            f'<a href="#ch-{nums[i+1]}">{T("chapter")} {nums[i+1]} →</a>'
             if i + 1 < len(chapters)
-            else '<a href="#end">Конец →</a>'
+            else f'<a href="#end">{T("end_link")}</a>'
         )
         body.append(
             f'<article class="chapter" id="ch-{ch["num"]}" data-ch="{ch["num"]}">'
             f'<header class="ch-head col"><h3>{html.escape(ch["title"])}</h3>'
-            f'<p class="ch-meta">{ch["minutes"]} мин чтения</p></header>'
+            f'<p class="ch-meta">{ch["minutes"]} {T("min_read")}</p></header>'
             f'<section class="day">{figure(ch["num"], "a", images, captions)}'
             f'<div class="col">{log}{"".join(ch["day"])}</div></section>'
             f'<section class="dream">{figure(ch["num"], "b", images, captions)}'
             f'<div class="col">{"".join(ch["dream"])}</div></section>'
-            f'<nav class="ch-nav col" aria-label="Навигация по главам">{prev_link}'
-            f'<a href="#toc">Содержание</a>{next_link}</nav>'
+            f'<nav class="ch-nav col" aria-label="{T("ch_nav")}">{prev_link}'
+            f'<a href="#toc">{T("contents")}</a>{next_link}</nav>'
             f"</article>"
         )
 
+    audio = FULL_AUDIO.exists() and LANG == "ru"     # аудио только в русской версии
     page = TEMPLATE
     page = page.replace("%%FONTS%%", fonts_html())
-    page = page.replace("%%TITLE%%", TITLE)
-    page = page.replace("%%AUTHOR%%", AUTHOR)
-    page = page.replace("%%LISTEN%%", '<a href="audio.html">Слушать</a>' if FULL_AUDIO.exists() else "")
-    page = page.replace("%%DONATE%%", DONATE_LINE)
+    page = page.replace("%%TITLE%%", T("title"))
+    page = page.replace("%%AUTHOR%%", T("author"))
+    page = page.replace("%%LISTEN%%", f'<a href="audio.html">{T("listen")}</a>' if audio else "")
+    page = page.replace("%%BARLISTEN%%",
+                        f'<a class="bar-about" href="audio.html">{T("listen")}</a>' if audio else "")
+    page = page.replace("%%LANGLINK%%", lang_link(""))
+    page = page.replace("%%DONATE%%", T("donate"))
+    page = loc(page)
     page = page.replace("%%TOC%%", "".join(toc_html))
     page = page.replace("%%DRAWER%%", "".join(drawer_html))
     page = page.replace("%%BODY%%", "".join(body))
@@ -361,13 +441,14 @@ def render(chapters, images=None, captions=None):
 
 
 TEMPLATE = r"""<!doctype html>
-<html lang="ru">
+<html lang="%%T:lang%%">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>%%AUTHOR%% — %%TITLE%%</title>
+<link rel="alternate" hreflang="%%T:other_lang%%" href="%%T:other%%">
 <meta name="author" content="%%AUTHOR%%">
-<meta name="description" content="Роман в двух мирах: офисная Москва 2001–2004 годов и мир, где герою открыто всё.">
+<meta name="description" content="%%T:desc%%">
 %%FONTS%%
 <style>
 :root{
@@ -448,14 +529,19 @@ a{color:inherit}
 /* знак ударения рисуется отдельно: в моноширинном шрифте комбинируемый акут съезжает на соседнюю букву */
 .acc{position:relative;display:inline-block}
 .acc::after{content:"\00B4";position:absolute;left:0;right:0;top:-.5em;text-align:center}
-.cover-about{position:absolute;top:16px;right:16px;font-size:16px;font-weight:700;color:var(--ink);
+.cover-links{position:absolute;top:16px;right:16px;display:flex;gap:10px;align-items:center}
+.lang{font-size:15px;color:var(--muted);text-decoration:none;border:1px solid var(--rule);
+  border-radius:999px;padding:7px 14px}
+.lang:hover{color:var(--ink);border-color:var(--ink)}
+.bar .lang{padding:4px 10px;font-size:14px}
+.cover-about{font-size:16px;font-weight:700;color:var(--ink);
   text-decoration:none;display:inline-flex;align-items:center;gap:8px;padding:8px 16px;
   border:1px solid var(--ink);border-radius:999px;background:var(--paper)}
 .cover-about::before{content:"i";display:inline-grid;place-items:center;width:20px;height:20px;
   border-radius:50%;background:var(--ink);color:var(--paper);font-size:13px;font-style:italic;font-family:var(--serif)}
 .cover-about:hover{background:var(--ink);color:var(--paper)}
 .cover-about:hover::before{background:var(--paper);color:var(--ink)}
-@media (max-width:600px){.cover-about{position:static;margin:0 0 28px}}
+@media (max-width:600px){.cover-links{position:static;margin:0 0 28px}}
 .bar-about{font-size:14px;color:var(--accent);font-weight:700;text-decoration:none;white-space:nowrap;
   border-bottom:2px solid var(--accent)}
 .bar-about:hover{color:var(--ink);border-color:var(--ink)}
@@ -551,36 +637,37 @@ a{color:inherit}
 <header class="bar" id="bar">
   <a class="bar-title" href="#top">%%TITLE%%</a>
   <span class="bar-where" id="where"></span>
-  <a class="bar-about" href="audio.html">Слушать</a>
-  <a class="bar-about" href="about.html">О проекте</a>
-  <button type="button" id="smaller" aria-label="Уменьшить шрифт">A−</button>
-  <button type="button" id="bigger" aria-label="Увеличить шрифт">A+</button>
-  <button type="button" id="theme" aria-label="Сменить тему">◐</button>
-  <button type="button" id="open-drawer">Главы</button>
+  %%BARLISTEN%%
+  <a class="bar-about" href="about.html">%%T:about%%</a>
+  %%LANGLINK%%
+  <button type="button" id="smaller" aria-label="%%T:smaller%%">A−</button>
+  <button type="button" id="bigger" aria-label="%%T:bigger%%">A+</button>
+  <button type="button" id="theme" aria-label="%%T:theme%%">◐</button>
+  <button type="button" id="open-drawer">%%T:chapters%%</button>
 </header>
 
 <section class="cover" id="top">
-  <a class="cover-about" href="about.html">О проекте</a>
+  <div class="cover-links">%%LANGLINK%%<a class="cover-about" href="about.html">%%T:about%%</a></div>
   <p class="cover-author">%%AUTHOR%%</p>
-  <h1><span>Системный</span><span>Администратор</span></h1>
-  <p class="cover-sub">Роман в двух мирах</p>
+  <h1><span>%%T:h1a%%</span><span>%%T:h1b%%</span></h1>
+  <p class="cover-sub">%%T:sub%%</p>
   <div class="worlds">
-    <div class="w-day"><b>Наше время</b>Москва, 2001–2004. Фирма деревянных окон, бухгалтерия, чужая почта.</div>
-    <div class="w-dream"><b>Вход</b>Каждую ночь — туда, где ему открыто всё.</div>
+    <div class="w-day"><b>%%T:w_day_b%%</b>%%T:w_day%%</div>
+    <div class="w-dream"><b>%%T:w_dream_b%%</b>%%T:w_dream%%</div>
   </div>
   <div class="cover-actions">
-    <a class="primary" href="#ch-1">Начать читать</a>
-    <a href="#toc">Содержание</a>
+    <a class="primary" href="#ch-1">%%T:start%%</a>
+    <a href="#toc">%%T:contents%%</a>
     %%LISTEN%%
   </div>
-  <p class="resume" id="resume">Вы остановились на <a href="#" id="resume-link"></a></p>
-  <p class="cover-meta">%%COUNT%% глав · около %%HOURS%% часов чтения</p>
+  <p class="resume" id="resume">%%T:resume%% <a href="#" id="resume-link"></a></p>
+  <p class="cover-meta">%%T:meta%%</p>
   <p class="cover-meta">%%DONATE%%</p>
 </section>
 
 <section class="toc" id="toc">
   <div class="col">
-    <h2>Содержание</h2>
+    <h2>%%T:contents%%</h2>
     <ol>%%TOC%%</ol>
   </div>
 </section>
@@ -588,23 +675,22 @@ a{color:inherit}
 <main>%%BODY%%</main>
 
 <section class="end" id="end">
-  <p class="fin">Конец</p>
-  <p><a href="#toc">К содержанию</a></p>
-  <p class="fiction">Все персонажи, организации и события вымышлены. Любое сходство с реальными
-    людьми и организациями случайно.</p>
-  <p class="fiction"><a href="about.html">О проекте и правах</a></p>
+  <p class="fin">%%T:end%%</p>
+  <p><a href="#toc">%%T:to_toc%%</a></p>
+  <p class="fiction">%%T:fiction%%</p>
+  <p class="fiction"><a href="about.html">%%T:about_rights%%</a></p>
   <p class="fiction">%%DONATE%%</p>
 </section>
 
 <div class="scrim" id="scrim"></div>
-<aside class="drawer" id="drawer" aria-label="Главы" aria-hidden="true">
-  <div class="drawer-head"><b>Главы</b><button type="button" id="close-drawer">Закрыть</button></div>
+<aside class="drawer" id="drawer" aria-label="%%T:chapters%%" aria-hidden="true">
+  <div class="drawer-head"><b>%%T:chapters%%</b><button type="button" id="close-drawer">%%T:close%%</button></div>
   <ol>%%DRAWER%%</ol>
 </aside>
 
 <script>
 (function(){
-  var KEY = "sysadmin-reader";
+  var KEY = "%%T:store%%";
   function load(){ try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch(e){ return {}; } }
   function save(s){ try { localStorage.setItem(KEY, JSON.stringify(s)); } catch(e){} }
   var state = load();
@@ -667,7 +753,7 @@ a{color:inherit}
       current = found;
       if (current){
         if (links[current.dataset.ch]) links[current.dataset.ch].classList.add("cur");
-        where.textContent = partOf(current) + " · Глава " + current.dataset.ch;
+        where.textContent = partOf(current) + " · %%T:chapter%% " + current.dataset.ch;
       } else where.textContent = "";
     }
     clearTimeout(saveTimer);
@@ -680,7 +766,7 @@ a{color:inherit}
 
   if (state.ch && state.ch !== "1" && !location.hash){
     var r = document.getElementById("resume"), rl = document.getElementById("resume-link");
-    rl.textContent = "главе " + state.ch;
+    rl.textContent = "%%T:resume_ch%%" + state.ch;
     rl.href = "#ch-" + state.ch;
     rl.addEventListener("click", function(e){
       if (state.y){ e.preventDefault(); scrollTo({top: state.y, behavior: "auto"}); }
@@ -696,7 +782,7 @@ a{color:inherit}
 
 
 ABOUT_TEMPLATE = r"""<!doctype html>
-<html lang="ru">
+<html lang="%%T:lang%%">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -709,6 +795,9 @@ ABOUT_TEMPLATE = r"""<!doctype html>
 .page{max-width:44em;margin:0 auto;padding:40px 16px 80px}
 .back{font-size:15px;color:var(--muted);text-decoration:none;border-bottom:1px solid var(--rule)}
 .back:hover{color:var(--ink)}
+.toplinks{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+.lang{font-size:15px;color:var(--muted);text-decoration:none;border:1px solid var(--rule);border-radius:999px;padding:5px 12px}
+.lang:hover{color:var(--ink);border-color:var(--ink)}
 h1{font-size:clamp(32px,6vw,52px);line-height:1.08;margin:28px 0 6px}
 .lead{color:var(--muted);font-style:italic;margin:0 0 36px}
 h2{font-size:15px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);
@@ -726,13 +815,13 @@ a{color:var(--accent)}
 .note{font-size:16px;color:var(--muted);margin-top:44px;border-top:1px solid var(--rule);padding-top:18px}
 </style>
 <script>
-  try { var s = JSON.parse(localStorage.getItem("sysadmin-reader")) || {};
+  try { var s = JSON.parse(localStorage.getItem("%%T:store%%")) || {};
         if (s.theme) document.documentElement.setAttribute("data-theme", s.theme); } catch (e) {}
 </script>
 </head>
 <body>
 <main class="page">
-  <a class="back" href="index.html">← К книге</a>
+  <nav class="toplinks"><a class="back" href="index.html">%%T:back%%</a>%%LANGLINK%%</nav>
   <h1>О проекте</h1>
   <p class="lead">%%AUTHOR%% · «%%TITLE%%» · роман в двух мирах</p>
   <p class="wip"><b>Проект в работе.</b> Текст, иллюстрации, аудиоверсия и материалы к роману
@@ -746,6 +835,7 @@ a{color:var(--accent)}
       <a href="https://www.anthropic.com/claude">Claude Opus 5.5</a>
       (<a href="https://www.anthropic.com">Anthropic</a>)</dd>
     <dt>Редактор, корректор</dt><dd><a href="https://claude.com">Claude</a></dd>
+    <dt>Перевод на английский</dt><dd>автоматический, Claude — <a href="en/">English version</a></dd>
     <dt>Литературный редактор</dt><dd><a class="wanted" href="%%EDITOR_URL%%">Ищется</a> —
       если хотите взяться, напишите в <a href="%%EDITOR_URL%%">обсуждении на GitHub</a></dd>
     <dt><a href="synopsis.html">Синопсис</a>, библии <a href="characters.html">персонажей</a>
@@ -808,18 +898,98 @@ a{color:var(--accent)}
 """
 
 
-def render_about():
+ABOUT_MAIN_EN = r"""<main class="page">
+  <nav class="toplinks"><a class="back" href="index.html">%%T:back%%</a>%%LANGLINK%%</nav>
+  <h1>About the project</h1>
+  <p class="lead">%%AUTHOR%% · <i>%%TITLE%%</i> · a novel in two worlds</p>
+  <p class="wip"><b>Work in progress.</b> The text, illustrations, translation and background
+    materials are still being refined — content may be updated.</p>
+
+  <h2>Text</h2>
+  <dl>
+    <dt>Original idea</dt><dd>%%AUTHOR%%</dd>
+    <dt>Author</dt><dd>%%AUTHOR%%, co-written with the models
+      <a href="https://www.anthropic.com/claude/fable">Claude Fable 5.2</a> and
+      <a href="https://www.anthropic.com/claude">Claude Opus 5.5</a>
+      (<a href="https://www.anthropic.com">Anthropic</a>)</dd>
+    <dt>Editor, proofreader</dt><dd><a href="https://claude.com">Claude</a></dd>
+    <dt>English translation</dt><dd>machine translation by Claude, from the Russian original</dd>
+    <dt>Literary editor</dt><dd><a class="wanted" href="%%EDITOR_URL%%">Wanted</a> —
+      if you'd like to take it on, write in the <a href="%%EDITOR_URL%%">GitHub discussion</a></dd>
+    <dt><a href="synopsis.html">Synopsis</a>, <a href="characters.html">character</a>
+      and <a href="worlds.html">world</a> bibles</dt><dd>%%AUTHOR%% and Claude</dd>
+  </dl>
+
+  <h2>Illustrations</h2>
+  <dl>
+    <dt>Generation</dt><dd><a href="https://gemini.google.com">Google Gemini</a>
+      (Nano Banana image model)</dd>
+    <dt>Prompts</dt><dd>%%AUTHOR%%</dd>
+  </dl>
+
+  <h2>Audio</h2>
+  <dl>
+    <dt>Audiobook</dt><dd>Available in Russian only: <a href="../audio.html">listen or download</a>.
+      Synthesised with <a href="https://github.com/snakers4/silero-models">Silero TTS</a>
+      (© <a href="https://silero.ai">Silero Team</a>,
+      <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>) through
+      <a href="https://github.com/Sorbiers/gogolium">Gogolium</a></dd>
+  </dl>
+
+  <h2>Website</h2>
+  <dl>
+    <dt>Design and generator</dt><dd>Claude in <a href="https://claude.com/claude-code">Claude Code</a>,
+      with <a href="https://www.python.org">Python</a> and <a href="https://python-pillow.org">Pillow</a></dd>
+    <dt>Fonts</dt><dd><a href="https://fonts.google.com/specimen/PT+Serif">PT Serif</a> and
+      <a href="https://fonts.google.com/specimen/PT+Mono">PT Mono</a> by ParaType, served from this site
+      (<a href="../fonts/OFL-ptserif.txt">licence</a>) — visitors make no requests to Google</dd>
+    <dt>Source code</dt><dd><a href="%%REPO_URL%%">GitHub</a> — site and audio build tools,
+      synopsis and bibles; no novel text, no audio</dd>
+    <dt>Support</dt><dd><a href="%%DONATE_URL%%">Ko-fi</a> — the site is free and has no ads</dd>
+  </dl>
+
+  <h2>Rights and licences</h2>
+  <dl>
+    <dt>Novel text</dt><dd>© %%YEAR%% %%AUTHOR%%. Anthropic's rights in Claude's output are assigned to
+      the author (<a href="https://www.anthropic.com/legal/consumer-terms">Anthropic terms</a>, section 4).</dd>
+    <dt>Illustrations</dt><dd>Google claims no ownership of generated images
+      (<a href="https://policies.google.com/terms">Google Terms of Service</a>).
+      The files carry an invisible SynthID watermark and C2PA provenance metadata.</dd>
+    <dt>Audiobook</dt><dd>Synthesised with Silero
+      (<a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>):
+      free, non-commercial use only.</dd>
+    <dt>Fonts</dt><dd>PT Serif, PT Mono — <a href="https://openfontlicense.org">SIL Open Font License 1.1</a></dd>
+    <dt>Tools</dt><dd>Gogolium — MIT; PyTorch — BSD; FFmpeg — LGPL; Python — PSF; Pillow — MIT-CMU.
+      Their licences do not extend to the results (text, audio, site).</dd>
+  </dl>
+
+  <p class="note">All characters, organisations and events are fictional. Any resemblance to real
+    people or organisations is coincidental.<br>
+    Novel text © %%YEAR%% %%AUTHOR%%. All rights reserved.
+    The audiobook is for non-commercial use only.</p>
+</main>"""
+ABOUT_TEMPLATE_EN = (ABOUT_TEMPLATE[:ABOUT_TEMPLATE.index('<main class="page">')] + ABOUT_MAIN_EN
+                     + ABOUT_TEMPLATE[ABOUT_TEMPLATE.index("</main>") + len("</main>"):])
+ABOUT_TEMPLATE_EN = (ABOUT_TEMPLATE_EN
+                     .replace("<title>О проекте — %%TITLE%%</title>", "<title>About — %%TITLE%%</title>")
+                     .replace('content="Кто и чем делал роман «%%TITLE%%»: текст, редактура, иллюстрации, озвучание, сайт."',
+                              'content="Who made the novel %%TITLE%% and how: text, editing, translation, illustrations, audio, website."'))
+
+
+def render_about(out_dir):
     base_css = TEMPLATE[TEMPLATE.index(":root{"):TEMPLATE.index("/* прогресс")]
-    page = ABOUT_TEMPLATE.replace("%%BASE_CSS%%", base_css).replace("%%FONTS%%", fonts_html())
-    for k, v in {"TITLE": TITLE, "AUTHOR": AUTHOR, "EDITOR_URL": EDITOR_DISCUSSION_URL,
+    tpl = ABOUT_TEMPLATE if LANG == "ru" else ABOUT_TEMPLATE_EN
+    page = tpl.replace("%%BASE_CSS%%", base_css).replace("%%FONTS%%", fonts_html())
+    page = page.replace("%%LANGLINK%%", lang_link("about.html"))
+    for k, v in {"TITLE": T("title"), "AUTHOR": T("author"), "EDITOR_URL": EDITOR_DISCUSSION_URL,
                  "REPO_URL": REPO_URL, "DONATE_URL": DONATE_URL,
                  "YEAR": str(time.localtime().tm_year)}.items():
         page = page.replace(f"%%{k}%%", html.escape(v))
-    ABOUT.write_text(page, encoding="utf-8")
+    (out_dir / "about.html").write_text(loc(page), encoding="utf-8")
 
 
 SUB_TEMPLATE = r"""<!doctype html>
-<html lang="ru">
+<html lang="%%T:lang%%">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -833,6 +1003,7 @@ SUB_TEMPLATE = r"""<!doctype html>
 .nav{display:flex;gap:18px;flex-wrap:wrap;font-size:15px}
 .nav a{color:var(--muted);text-decoration:none;border-bottom:1px solid var(--rule)}
 .nav a:hover{color:var(--ink)}
+.nav a.lang{border:1px solid var(--rule);border-radius:999px;padding:0 10px}
 h1{font-size:clamp(30px,5.5vw,48px);line-height:1.1;margin:28px 0 8px}
 .lead{color:var(--muted);font-style:italic;margin:0 0 30px}
 a{color:var(--accent)}
@@ -866,13 +1037,13 @@ a{color:var(--accent)}
 .note{font-size:15px;color:var(--muted);margin-top:40px}
 </style>
 <script>
-  try { var s = JSON.parse(localStorage.getItem("sysadmin-reader")) || {};
+  try { var s = JSON.parse(localStorage.getItem("%%T:store%%")) || {};
         if (s.theme) document.documentElement.setAttribute("data-theme", s.theme); } catch (e) {}
 </script>
 </head>
 <body>
 <main class="page">
-  <nav class="nav"><a href="index.html">← К книге</a><a href="audio.html">Слушать</a><a href="about.html">О проекте</a></nav>
+  <nav class="nav"><a href="index.html">%%T:back%%</a>%%NAVLISTEN%%<a href="about.html">%%T:about%%</a>%%LANGLINK%%</nav>
   <h1>%%PAGE%%</h1>
   <p class="lead">%%AUTHOR%% · «%%TITLE%%»</p>
 %%BODY%%
@@ -884,12 +1055,17 @@ a{color:var(--accent)}
 """
 
 
-def write_subpage(path, page_title, body, desc, script=""):
+def write_subpage(path, page_title, body, desc, script="", other=None):
+    """other — имя этой же страницы на другом языке (None — такой нет: ссылка ведёт на главную)."""
     base_css = TEMPLATE[TEMPLATE.index(":root{"):TEMPLATE.index("/* прогресс")]
+    listen = f'<a href="audio.html">{T("listen")}</a>' if LANG == "ru" and FULL_AUDIO.exists() else ""
     out = (SUB_TEMPLATE.replace("%%BASE_CSS%%", base_css).replace("%%FONTS%%", fonts_html())
-           .replace("%%SCRIPT%%", script).replace("%%BODY%%", body).replace("%%DONATE%%", DONATE_LINE))
-    for k, v in {"PAGE": page_title, "TITLE": TITLE, "AUTHOR": AUTHOR, "DESC": desc}.items():
+           .replace("%%NAVLISTEN%%", listen)
+           .replace("%%LANGLINK%%", lang_link(path.name if other is None else other)))
+    out = loc(out)
+    for k, v in {"PAGE": page_title, "TITLE": T("title"), "AUTHOR": T("author"), "DESC": desc}.items():
         out = out.replace(f"%%{k}%%", html.escape(v))
+    out = out.replace("%%SCRIPT%%", script).replace("%%BODY%%", body).replace("%%DONATE%%", T("donate"))
     path.write_text(out, encoding="utf-8")
 
 
@@ -969,7 +1145,7 @@ def render_audio(chapters):
       Подробнее — <a href="about.html">О проекте</a>.</p>
   </div>"""
     write_subpage(page, "Аудиокнига", body, f"Аудиоверсия романа «{TITLE}»: главы и полная книга в MP3.",
-                  AUDIO_SCRIPT)
+                  AUDIO_SCRIPT, other="")
     return len(items)
 
 
@@ -996,25 +1172,37 @@ def add_portraits(body_html):
             name = publish_image(src, PORTRAITS_OUT, Path(fname).stem)
             used.add(name)
             cap = html.escape(caption)
-            figs.append(f'<figure><a href="portraits/{name}"><img src="portraits/{name}" alt="{cap}" '
+            figs.append(f'<figure><a href="{PREFIX}portraits/{name}"><img src="{PREFIX}portraits/{name}" alt="{cap}" '
                         f'loading="lazy" decoding="async"></a><figcaption>{cap}</figcaption></figure>')
         return f'<div class="portraits">{"".join(figs)}</div>' if figs else ""
 
     def place(m):
-        title = re.sub(r"<[^>]+>", "", m.group(2)).replace("́", "")
+        import unicodedata  # ударения бывают и отдельным знаком (и́), и готовой буквой (í)
+        title = re.sub(r"<[^>]+>", "", m.group(2))
+        title = "".join(c for c in unicodedata.normalize("NFD", title) if c != "́")
+        title = unicodedata.normalize("NFC", title)
         for key, items in conf.items():
             if title.startswith(key):
                 return m.group(0) + gallery(items)
         return m.group(0)
 
     body_html = re.sub(r"(<h[23][^>]*>)(.*?)</h[23]>", place, body_html)
+    # убрать картинки, на которые не ссылается ни одна запись (на любом языке)
+    keep = {Path(f).stem + ".jpg" for items in conf.values() for f, _ in items}
     for old in PORTRAITS_OUT.iterdir():
-        if old.name not in used:
+        if old.name not in keep:
             old.unlink()
     return body_html
 
 
-def render_docs():
+DOCS_EN = {
+    "synopsis_en.md": ("synopsis.html", "Synopsis"),
+    "characters_en.md": ("characters.html", "Character Bible"),
+    "worlds_en.md": ("worlds.html", "World Bible"),
+}
+
+
+def render_docs(out_dir):
     """Синопсис и библии -> отдельные страницы (нужен пакет markdown)."""
     try:
         import markdown
@@ -1022,20 +1210,21 @@ def render_docs():
         print("Пакет markdown не установлен — страницы синопсиса и библий пропущены (pip install markdown)")
         return []
     made = []
-    for src, (out, title) in DOCS.items():
+    for src, (out, title) in (DOCS if LANG == "ru" else DOCS_EN).items():
         p = ROOT / src
         if not p.exists():
             continue
         text = p.read_text(encoding="utf-8")
         text = re.sub(r"\A#\s+.*\n", "", text)          # свой заголовок страницы
         body_md = markdown.markdown(text, extensions=["tables", "sane_lists"])
-        if src == "characters.md":
+        if src.startswith("characters"):
             body_md = add_portraits(body_md)
-        kind = "Синопсис раскрывает" if src == "synopsis.md" else "Рабочий материал автора: раскрывает"
-        body = (f'  <p class="spoiler">{kind} весь сюжет, включая финал. '
-                'Если вы ещё не читали роман — сначала <a href="index.html">книга</a>.</p>\n'
+        kind = T("spoiler_syn") if src.startswith("synopsis") else T("spoiler_doc")
+        body = (f'  <p class="spoiler">{kind} {T("spoiler_tail")}</p>\n'
                 f'  <div class="md">{body_md}</div>')
-        write_subpage(ROOT / "site" / out, title, body, f"{title} романа «{TITLE}» — рабочий материал автора.")
+        desc = (f"{title} романа «{TITLE}»." if LANG == "ru"
+                else f"{title} of the novel {T('title')}.")
+        write_subpage(out_dir / out, title, body, desc)
         made.append(out)
     return made
 
@@ -1046,6 +1235,7 @@ def main():
         sys.stdout.reconfigure(encoding="utf-8")
     except Exception:
         pass
+    global LANG, PREFIX
     files = sorted(CHAPTERS.glob("*.md"), key=lambda p: int(re.sub(r"\D", "", p.stem) or 0))
     chapters = [parse_chapter(p) for p in files]
     chapters.sort(key=lambda c: c["num"])
@@ -1053,13 +1243,29 @@ def main():
     nums = [c["num"] for c in chapters]
     images = find_illustrations(nums)
     captions = load_captions()
+    LANG, PREFIX = "ru", ""
     OUT.write_text(render(chapters, images, captions), encoding="utf-8")
-    render_about()
+    render_about(OUT.parent)
     publish_fonts()
     n_audio = render_audio(chapters)
-    docs = render_docs()
+    docs = render_docs(OUT.parent)
     words = sum(c["minutes"] for c in chapters) * 180
     print(f"Собрано: {OUT}  ({len(chapters)} глав, ~{words} слов)")
+
+    # английская версия: site/en/ из chapters_en/ (если переводы есть)
+    en_files = sorted(CHAPTERS_EN.glob("[0-9][0-9].md")) if CHAPTERS_EN.exists() else []
+    if en_files:
+        LANG, PREFIX = "en", "../"
+        en_dir = OUT.parent / "en"
+        en_dir.mkdir(exist_ok=True)
+        en_ch = sorted((parse_chapter(f) for f in en_files), key=lambda c: c["num"])
+        (en_dir / "index.html").write_text(render(en_ch, images, captions), encoding="utf-8")
+        render_about(en_dir)
+        en_docs = render_docs(en_dir)
+        en_words = sum(len(f.read_text(encoding="utf-8").split()) for f in en_files)
+        print(f"English: {en_dir / 'index.html'}  ({len(en_ch)} из {len(chapters)} глав, ~{en_words} слов); "
+              f"страницы: {', '.join(en_docs) or 'нет'}")
+        LANG, PREFIX = "ru", ""
     print(f"Иллюстраций: {len(images)} из {len(nums) * 2}"
           + ("" if ILLU_SRC.exists() else f"  (папки {ILLU_SRC.name} нет)"))
     print(f"Аудиостраница: {n_audio} глав" if n_audio else "Аудиостраницы нет (нет полной аудиокниги)")
