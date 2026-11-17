@@ -71,6 +71,10 @@ def apply_stress(text):
     table = stress_table()
     for plain, marked in table["phrases"]:
         text = text.replace(plain, marked)
+    names = table.get("names", {})      # имена: точная форма с заглавной, регистр важен
+    if names:
+        text = re.sub(r"(?<![А-Яа-яЁё+])[А-ЯЁ][а-яё]+(?![А-Яа-яЁё+])",
+                      lambda m: names.get(m.group(0), m.group(0)), text)
     words = table["words"]
 
     def mark(m):

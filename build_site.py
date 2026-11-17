@@ -448,11 +448,17 @@ a{color:inherit}
 /* знак ударения рисуется отдельно: в моноширинном шрифте комбинируемый акут съезжает на соседнюю букву */
 .acc{position:relative;display:inline-block}
 .acc::after{content:"\00B4";position:absolute;left:0;right:0;top:-.5em;text-align:center}
-.cover-about{position:absolute;top:16px;right:16px;font-size:15px;color:var(--muted);text-decoration:none;
-  border-bottom:1px solid var(--rule)}
-.cover-about:hover{color:var(--ink)}
-.bar-about{font-size:14px;color:var(--muted);text-decoration:none;white-space:nowrap}
-.bar-about:hover{color:var(--ink)}
+.cover-about{position:absolute;top:16px;right:16px;font-size:16px;font-weight:700;color:var(--ink);
+  text-decoration:none;display:inline-flex;align-items:center;gap:8px;padding:8px 16px;
+  border:1px solid var(--ink);border-radius:999px;background:var(--paper)}
+.cover-about::before{content:"i";display:inline-grid;place-items:center;width:20px;height:20px;
+  border-radius:50%;background:var(--ink);color:var(--paper);font-size:13px;font-style:italic;font-family:var(--serif)}
+.cover-about:hover{background:var(--ink);color:var(--paper)}
+.cover-about:hover::before{background:var(--paper);color:var(--ink)}
+@media (max-width:600px){.cover-about{position:static;margin:0 0 28px}}
+.bar-about{font-size:14px;color:var(--accent);font-weight:700;text-decoration:none;white-space:nowrap;
+  border-bottom:2px solid var(--accent)}
+.bar-about:hover{color:var(--ink);border-color:var(--ink)}
 @media (max-width:600px){.bar-about{display:none}}
 .fiction{font-size:15px;color:var(--muted);font-style:italic;max-width:32em;margin:18px auto 0;padding:0 16px}
 .cover-author{font-size:clamp(18px,2.6vw,24px);letter-spacing:.04em;margin:0 0 14px}
