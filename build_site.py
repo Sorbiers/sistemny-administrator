@@ -21,8 +21,8 @@ ILLU_EXT = (".jpg", ".jpeg", ".png", ".webp", ".avif")
 TITLE = "Системный Администратор"
 AUTHOR = "Андрей Сорбье"
 REPO_URL = "https://github.com/Sorbiers/sistemny-administrator"
-# обсуждение «ищем литературного редактора»; пока его нет — раздел обсуждений репозитория
-EDITOR_DISCUSSION_URL = REPO_URL + "/discussions"
+# обсуждение «Ищем литературного редактора»
+EDITOR_DISCUSSION_URL = REPO_URL + "/discussions/1"
 ABOUT = ROOT / "site" / "about.html"
 DONATE_URL = "https://ko-fi.com/sorbiers"
 DONATE_LINE = (f'Сайт бесплатный и без рекламы. Если он вам нравится, автора можно отблагодарить: '
