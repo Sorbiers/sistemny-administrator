@@ -718,6 +718,8 @@ dt{color:var(--muted)}
 dd{margin:0}
 @media (max-width:600px){dl{grid-template-columns:1fr;gap:2px}dd{margin-bottom:12px}}
 a{color:var(--accent)}
+.wip{background:var(--log-bg);border-left:3px solid var(--dream-accent);padding:10px 14px;
+  font-size:16px;margin:0 0 8px}
 .wanted{color:#c0392b;font-weight:700}
 :root[data-theme="dark"] .wanted{color:#ff7b6b}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .wanted{color:#ff7b6b}}
@@ -733,6 +735,8 @@ a{color:var(--accent)}
   <a class="back" href="index.html">← К книге</a>
   <h1>О проекте</h1>
   <p class="lead">%%AUTHOR%% · «%%TITLE%%» · роман в двух мирах</p>
+  <p class="wip"><b>Проект в работе.</b> Текст, иллюстрации, аудиоверсия и материалы к роману
+    дорабатываются — возможны обновления контента.</p>
 
   <h2>Текст</h2>
   <dl>
@@ -842,6 +846,12 @@ a{color:var(--accent)}
 .md code{font-family:var(--mono);font-size:.9em}
 .md blockquote{margin:16px 0;padding:4px 16px;border-left:3px solid var(--rule);color:var(--muted)}
 .md hr{border:0;border-top:1px solid var(--rule);margin:32px 0}
+.portraits{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:14px 0 22px}
+.portraits figure{margin:0}
+.portraits img{display:block;width:100%;aspect-ratio:1/1;object-fit:cover;object-position:top;
+  border-radius:8px;box-shadow:0 2px 10px var(--shadow)}
+.portraits figcaption{font-size:14px;color:var(--muted);margin-top:6px;line-height:1.35}
+@media (max-width:600px){.portraits{grid-template-columns:1fr 1fr}}
 .spoiler{background:var(--log-bg);border-left:3px solid var(--log-edge);padding:10px 14px;font-size:16px}
 .chlist{list-style:none;padding:0;margin:0}
 .chlist li{padding:14px 0;border-bottom:1px solid var(--rule)}
@@ -963,6 +973,47 @@ def render_audio(chapters):
     return len(items)
 
 
+PORTRAITS_SRC = ROOT / "portraits"
+PORTRAITS_OUT = ROOT / "site" / "portraits"
+
+
+def add_portraits(body_html):
+    """Вставляет галереи портретов из portraits/portraits.json под заголовки персонажей."""
+    cfg = PORTRAITS_SRC / "portraits.json"
+    if not cfg.exists():
+        return body_html
+    conf = {k: v for k, v in json.loads(cfg.read_text(encoding="utf-8")).items() if not k.startswith("_")}
+    PORTRAITS_OUT.mkdir(parents=True, exist_ok=True)
+    used = set()
+
+    def gallery(items):
+        figs = []
+        for fname, caption in items:
+            src = PORTRAITS_SRC / fname
+            if not src.exists():
+                print(f"Портрет не найден: {src}")
+                continue
+            name = publish_image(src, PORTRAITS_OUT, Path(fname).stem)
+            used.add(name)
+            cap = html.escape(caption)
+            figs.append(f'<figure><a href="portraits/{name}"><img src="portraits/{name}" alt="{cap}" '
+                        f'loading="lazy" decoding="async"></a><figcaption>{cap}</figcaption></figure>')
+        return f'<div class="portraits">{"".join(figs)}</div>' if figs else ""
+
+    def place(m):
+        title = re.sub(r"<[^>]+>", "", m.group(2)).replace("́", "")
+        for key, items in conf.items():
+            if title.startswith(key):
+                return m.group(0) + gallery(items)
+        return m.group(0)
+
+    body_html = re.sub(r"(<h[23][^>]*>)(.*?)</h[23]>", place, body_html)
+    for old in PORTRAITS_OUT.iterdir():
+        if old.name not in used:
+            old.unlink()
+    return body_html
+
+
 def render_docs():
     """Синопсис и библии -> отдельные страницы (нужен пакет markdown)."""
     try:
@@ -978,7 +1029,10 @@ def render_docs():
         text = p.read_text(encoding="utf-8")
         text = re.sub(r"\A#\s+.*\n", "", text)          # свой заголовок страницы
         body_md = markdown.markdown(text, extensions=["tables", "sane_lists"])
-        body = ('  <p class="spoiler">Рабочий материал автора: содержит весь сюжет, включая финал. '
+        if src == "characters.md":
+            body_md = add_portraits(body_md)
+        kind = "Синопсис раскрывает" if src == "synopsis.md" else "Рабочий материал автора: раскрывает"
+        body = (f'  <p class="spoiler">{kind} весь сюжет, включая финал. '
                 'Если вы ещё не читали роман — сначала <a href="index.html">книга</a>.</p>\n'
                 f'  <div class="md">{body_md}</div>')
         write_subpage(ROOT / "site" / out, title, body, f"{title} романа «{TITLE}» — рабочий материал автора.")

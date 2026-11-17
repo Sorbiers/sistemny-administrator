@@ -19,12 +19,3 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-
----
-
-This license covers the code in this repository only: build_site.py, build_audio.py,
-audiobook.py, gogol_ssml.js, serve_site.bat, audio.bat.
-
-It does NOT cover the literary materials — synopsis.md, characters.md, worlds.md,
-stress.json — nor the novel itself, its audio version or illustrations:
-© 2026 Andrey Sorbier (Андрей Сорбье), all rights reserved.
